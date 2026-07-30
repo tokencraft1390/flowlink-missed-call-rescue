@@ -1,0 +1,13 @@
+FLOWLINK MISSED CALL RESCUE — INTAKE
+
+1. Business name
+2. Owner/contact name
+3. Best email
+4. Owner alert phone number
+5. Current public business phone number
+6. Should the current number be forwarded to a new FlowLink/Twilio number? Yes / No / Unsure
+7. Desired ring duration before triggering rescue text (recommended: 20 seconds)
+8. Customer rescue message (or choose the default)
+9. Business hours
+10. Primary service area
+11. Consent: I authorize FlowLink Revenue AI LLC to configure and test this communications workflow for my business.

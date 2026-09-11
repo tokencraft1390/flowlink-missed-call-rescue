@@ -1,0 +1,1 @@
+Account-side activation requires AGENTPHONE_API_KEY, a provisioned test number, the deployed HTTPS webhook URL, and the generated AGENTPHONE_WEBHOOK_SECRET. No live customer messaging should be enabled before a controlled signed webhook test passes.

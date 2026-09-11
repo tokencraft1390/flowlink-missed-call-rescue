@@ -1,0 +1,1 @@
+Live activation is blocked only on account-side secrets/number provisioning. Keep `CALL_RESCUE_DRY_RUN=true` until a controlled AgentPhone number has delivered a real signed webhook and its missed-call disposition has been observed and mapped safely.

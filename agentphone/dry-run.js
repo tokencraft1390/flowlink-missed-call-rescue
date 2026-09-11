@@ -1,25 +1,59 @@
 'use strict';
 
-const { mapAgentPhoneWebhook } = require('./adapter');
+const crypto = require('crypto');
+const { verifySignature, mapAgentPhoneWebhook } = require('./adapter');
 const { shouldStartRescue } = require('../provider-core/normalize-event');
 
+const secret = 'dry-run-secret-not-for-production';
+const timestamp = String(Math.floor(Date.now() / 1000));
+const deliveryId = 'wh_demo_delivery_001';
+
 const fixture = {
-  id: 'evt_demo_missed_001',
   event: 'agent.call_ended',
-  created_at: '2026-09-11T23:00:00Z',
+  channel: 'voice',
+  timestamp: new Date().toISOString(),
+  agentId: 'agt_demo_001',
   data: {
-    call_id: 'call_demo_001',
+    callId: 'call_demo_001',
+    numberId: 'num_demo_001',
     from: '+15555550100',
     to: '+15555550199',
-    status: 'no-answer'
+    direction: 'inbound',
+    status: 'no-answer',
+    startedAt: new Date().toISOString(),
+    endedAt: new Date().toISOString(),
+    durationSeconds: 0,
+    transcript: [],
+    callSuccessful: false
   }
 };
 
-const event = mapAgentPhoneWebhook(fixture);
-const rescue = shouldStartRescue(event);
+const rawBody = JSON.stringify(fixture);
+const digest = crypto
+  .createHmac('sha256', secret)
+  .update(`${timestamp}.${rawBody}`)
+  .digest('hex');
+const signature = `sha256=${digest}`;
+
+const signatureVerified = verifySignature({
+  rawBody,
+  signature,
+  timestamp,
+  secret
+});
+
+const event = mapAgentPhoneWebhook(fixture, {
+  'x-webhook-id': deliveryId,
+  'x-webhook-event': fixture.event
+});
+const rescue = signatureVerified && shouldStartRescue(event);
+
 const evidence = {
   dryRun: true,
   externalSendPerformed: false,
+  signatureVerified,
+  replayProtectionSeconds: 300,
+  deliveryId,
   normalizedEvent: event,
   rescueDecision: rescue ? 'START_RESCUE' : 'NO_ACTION',
   proposedActions: rescue ? [

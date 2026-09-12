@@ -1,0 +1,16 @@
+digraph G {
+  graph [bgcolor="#07111f", rankdir=LR, pad="0.35", nodesep="0.45", ranksep="0.7"];
+  node [shape=box, style="rounded,filled", fontname="Arial", fontsize=13, color="#35d9ff", fontcolor="white", fillcolor="#10263d", margin="0.18,0.12"];
+  edge [color="#a970ff", penwidth=2, fontname="Arial", fontsize=10, fontcolor="white"];
+  webhook [label="AgentPhone\nwebhook / fixture"];
+  normalize [label="Normalized\ncall event"];
+  strands [label="Strands Agent\n2 bounded tools"];
+  decision [label="Rescue decision\n+ proposed plan"];
+  human [label="Human approval\nrequired"];
+  blocked [label="External actions\nblocked in demo", color="#ffcc66"];
+  webhook -> normalize [label="map + validate"];
+  normalize -> strands [label="analyze"];
+  strands -> decision [label="plan"];
+  decision -> human [label="review"];
+  human -> blocked [label="no live adapter"];
+}

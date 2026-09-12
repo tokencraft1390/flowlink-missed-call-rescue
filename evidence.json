@@ -1,0 +1,33 @@
+{
+  "decision": {
+    "call_id": "call_demo_001",
+    "decision": "START_RESCUE",
+    "event_id": "evt_demo_missed_001",
+    "reason": "missed-call signal"
+  },
+  "external_send_performed": false,
+  "mode": "offline-evidence",
+  "plan": {
+    "actions": [
+      {
+        "name": "UPSERT_LEAD",
+        "status": "PROPOSED_ONLY"
+      },
+      {
+        "name": "DRAFT_RECOVERY_SMS",
+        "status": "PROPOSED_ONLY"
+      },
+      {
+        "name": "QUEUE_CALLBACK_ALERT",
+        "status": "PROPOSED_ONLY"
+      }
+    ],
+    "external_send_performed": false,
+    "human_approval_required": true
+  },
+  "strands_agent_created": true,
+  "strands_tools_executed": [
+    "analyze_missed_call",
+    "prepare_recovery_plan"
+  ]
+}

@@ -1,20 +1,41 @@
 # FlowLink Missed Call Rescue
 
-FlowLink Missed Call Rescue is a provider-normalized workflow for recovering missed service-business calls into qualified follow-up opportunities.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![CI](https://github.com/tokencraft1390/flowlink-missed-call-rescue/actions/workflows/ci.yml/badge.svg)](https://github.com/tokencraft1390/flowlink-missed-call-rescue/actions/workflows/ci.yml)
 
-## What is verified in this repository
+**Live service:** https://flowlink-missed-call-rescue.onrender.com  
+**Architecture:** [`docs/architecture.md`](docs/architecture.md)  
+**Agents for Humans demo script:** [`docs/demo-script-agents-for-humans.md`](docs/demo-script-agents-for-humans.md)  
+**CALL-E adapter:** [`src/call-e-adapter.mjs`](src/call-e-adapter.mjs)
 
-- AgentPhone webhook payloads can be normalized into a provider-neutral event schema.
+FlowLink Missed Call Rescue is a provider-normalized workflow for turning missed service-business calls into reviewable recovery opportunities while keeping external actions and evidence claims explicit.
+
+## Verified now
+
+- AgentPhone-style webhook payloads can be normalized into a provider-neutral event schema.
 - No-answer, busy, missed, and unanswered call outcomes are classified as rescue candidates.
-- AgentPhone webhook signatures are checked with HMAC-SHA256 using a timing-safe comparison.
-- A controlled dry-run produces machine-readable evidence without sending an external message or spending customer funds.
-- CI runs the automated tests and uploads the dry-run evidence as a workflow artifact.
+- Webhook signatures are checked with HMAC-SHA256 using timing-safe comparison in the AgentPhone adapter.
+- A controlled dry-run emits machine-readable evidence without performing an external send.
+- GitHub Actions runs the automated evidence path.
+- A Strands Agents SDK implementation defines a real agent and a purpose-built `classify_rescue_event` tool.
+- The Node application is deployed on Render.
+- A separate CALL-E adapter imports the official `@call-e/calle` server SDK and is wired to `client.calls.createAndWait(...)` behind explicit credential, number, idempotency, and execution guards.
 
-## Agents for Humans / Strands integration
+## Not claimed without additional evidence
 
-A separate Strands Agents SDK implementation lives in [`strands-agent/`](strands-agent/). It keeps the live Node service unchanged while giving the hackathon entry a real Strands agent boundary for missed-call triage and recovery planning.
+This repository does **not** by itself prove:
 
-Run it with Node.js 22+ and AWS/Bedrock credentials configured:
+- customer revenue or paid conversion,
+- SMS or phone-call delivery,
+- a completed CALL-E call,
+- production-scale uptime,
+- a reference customer.
+
+Those claims require the corresponding provider, payment, or customer evidence.
+
+## Agents for Humans / Strands
+
+The Strands implementation lives in [`strands-agent/`](strands-agent/). It keeps the existing Node service boundary intact while giving the hackathon entry an explicit agent/tool layer for missed-call triage.
 
 ```bash
 cd strands-agent
@@ -22,42 +43,57 @@ npm install
 node agent.js missed
 ```
 
-The Strands tool remains evidence-first: it may prepare a human-reviewed follow-up, but it does not claim an external send or revenue without corresponding provider/payment evidence.
+The Strands instructions require evidence discipline: the agent may prepare a follow-up decision, but it must not claim an external send or revenue without the corresponding evidence.
 
-## What is not yet claimed
+## CALL-E runtime path
 
-This repository does **not** by itself prove customer revenue, paid conversions, SMS delivery, production uptime, or a reference customer. Those claims require live provider and customer evidence.
-
-## Run locally
+The CALL-E competition path uses the sponsor's official `@call-e/calle` server SDK. The adapter is deliberately fail-closed. It will not place a phone call unless all required runtime values exist and `CALL_E_EXECUTE=1` is explicitly set.
 
 ```bash
+npm install
+export CALLE_API_KEY='<secret>'
+export CALLE_TEST_PHONE='<authorized-e164-number>'
+export CALLE_IDEMPOTENCY_KEY='flowlink-demo-001'
+export CALL_E_EXECUTE=1
+npm run calle:proof
+```
+
+Use only a phone number authorized for the test. Do not commit API keys or phone numbers. Until this command completes against CALL-E and provider-returned evidence is retained, the repository describes the CALL-E path as an implemented integration, not a completed call.
+
+## Local evidence path
+
+```bash
+npm install
 npm test
 npm run dry-run
 ```
 
-The dry-run emits JSON containing the normalized event, rescue decision, proposed actions, and an explicit `externalSendPerformed: false` marker.
+The dry-run emits the normalized event, rescue decision, proposed actions, and an explicit `externalSendPerformed: false` marker.
 
-## Production proof sequence
+## Evidence chain
 
-1. Receive one controlled missed call from the configured AgentPhone number.
-2. Persist the webhook event with provider event ID, call ID, timestamp, caller, destination, and normalized event type.
-3. Generate the recovery follow-up.
-4. Deliver one controlled follow-up and retain provider delivery evidence.
-5. Complete one qualification tied to the original call ID.
-6. Run one paid pilot and retain payment/receipt evidence privately.
+The intended production chain is:
 
-Only after steps 1–6 should the project be represented as having paid commercial traction.
+`provider event -> normalized event -> Strands decision -> approved recovery action -> provider outcome -> qualification -> payment evidence`
+
+Each link must be observed before downstream claims are made. Missing evidence stays an explicit gap rather than being inferred from architecture or test output.
 
 ## Core boundaries
 
-- Secrets belong in the deployment provider's environment-variable store, never in source control.
-- Webhook signature validation must fail closed when the webhook secret is absent or invalid.
-- Controlled dry-runs must never send messages or initiate paid actions.
-- Revenue claims must be grounded in receipts/payment records, not architecture or test output.
+- Secrets belong in deployment/provider secret stores, never source control.
+- Webhook verification must fail closed when required authentication material is missing or invalid.
+- Dry-runs must never send messages or initiate phone calls.
+- The CALL-E adapter requires an explicit execution flag and authorized destination.
+- Revenue claims require actual payment records.
 
 ## Architecture
 
-See [`docs/architecture.md`](docs/architecture.md).
+See [`docs/architecture.md`](docs/architecture.md) for the system diagram, sequence, stack, traceability matrix, tensions/controls, and hackathon definitions of done.
+
+## Submission material
+
+- Agents for Humans narration + shot list: [`docs/demo-script-agents-for-humans.md`](docs/demo-script-agents-for-humans.md)
+- CALL-E contribution PR draft: [`docs/call-e-submission-pr.md`](docs/call-e-submission-pr.md)
 
 ## License
 

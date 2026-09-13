@@ -6,6 +6,7 @@
     "node": ">=22"
   },
   "dependencies": {
+    "@call-e/calle": "0.7.0",
     "@strands-agents/sdk": "latest",
     "zod": "latest"
   }

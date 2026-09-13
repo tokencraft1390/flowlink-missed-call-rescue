@@ -1,0 +1,13 @@
+{
+  "name": "flowlink-missed-call-rescue",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Provider-normalized missed-call rescue proof harness for FlowLink Revenue AI.",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "dry-run": "node agentphone/dry-run.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,52 +1,49 @@
 'use strict';
 
 const crypto = require('crypto');
-const { normalizeEvent } = require('../provider-core/normalize-event');
 
-function timingSafeEqualHex(a, b) {
-  const ab = Buffer.from(String(a || ''), 'hex');
-  const bb = Buffer.from(String(b || ''), 'hex');
-  if (ab.length === 0 || ab.length !== bb.length) return false;
-  return crypto.timingSafeEqual(ab, bb);
+/**
+ * Maps AgentPhone webhook events to internal event format
+ * @param {Object} webhook - The incoming webhook payload
+ * @returns {Object} Mapped event object
+ */
+function mapAgentPhoneWebhook(webhook) {
+  const event = {
+    id: webhook.id,
+    type: 'CALL_ENDED',
+    timestamp: webhook.created_at,
+    callId: webhook.data?.call_id,
+    from: webhook.data?.from,
+    to: webhook.data?.to,
+    status: webhook.data?.status,
+  };
+
+  // Map 'no-answer' status to CALL_MISSED type
+  if (webhook.data?.status === 'no-answer') {
+    event.type = 'CALL_MISSED';
+  }
+
+  return event;
 }
 
+/**
+ * Verifies the HMAC signature of a webhook payload
+ * @param {Object} params - Verification parameters
+ * @param {Buffer} params.rawBody - The raw request body
+ * @param {string} params.signature - The signature from the webhook header
+ * @param {string} params.secret - The webhook secret
+ * @returns {boolean} True if signature is valid, false otherwise
+ */
 function verifySignature({ rawBody, signature, secret }) {
-  if (!secret) throw new Error('AGENTPHONE_WEBHOOK_SECRET is required');
-  const expected = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
-  const supplied = String(signature || '').replace(/^sha256=/i, '');
-  return timingSafeEqualHex(expected, supplied);
+  const computedSignature = crypto
+    .createHmac('sha256', secret)
+    .update(rawBody)
+    .digest('hex');
+
+  return computedSignature === signature;
 }
 
-function mapAgentPhoneWebhook(payload) {
-  const eventName = String(payload.event || payload.type || '').toLowerCase();
-  const data = payload.data || payload;
-
-  let type;
-  let disposition = data.disposition || data.status || null;
-
-  if (eventName.includes('message')) type = 'MESSAGE_RECEIVED';
-  else if (eventName.includes('voicemail')) type = 'VOICEMAIL_RECEIVED';
-  else if (eventName.includes('call_ended') || eventName.includes('call-ended')) {
-    const d = String(disposition || '').toLowerCase();
-    type = ['missed', 'no-answer', 'busy', 'unanswered'].includes(d) ? 'CALL_MISSED' : 'CALL_ENDED';
-  } else if (eventName.includes('call')) type = 'CALL_STARTED';
-  else throw new Error(`unsupported AgentPhone event: ${eventName || '<empty>'}`);
-
-  return normalizeEvent({
-    provider: 'agentphone',
-    type,
-    id: payload.id || data.id,
-    occurredAt: payload.created_at || payload.createdAt || data.created_at || data.createdAt,
-    from: data.from || data.from_number || data.caller,
-    to: data.to || data.to_number || data.number,
-    providerEventId: payload.id || data.event_id,
-    callId: data.call_id || data.callId,
-    messageId: data.message_id || data.messageId,
-    body: data.body || data.text || data.message,
-    transcript: data.transcript || data.transcription,
-    disposition,
-    raw: payload
-  });
-}
-
-module.exports = { verifySignature, mapAgentPhoneWebhook };
+module.exports = {
+  mapAgentPhoneWebhook,
+  verifySignature,
+};

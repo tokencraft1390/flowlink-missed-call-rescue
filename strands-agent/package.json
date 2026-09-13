@@ -1,0 +1,11 @@
+{
+  "name": "flowlink-missed-call-rescue-strands-agent",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@strands-agents/sdk": "latest"
+  }
+}

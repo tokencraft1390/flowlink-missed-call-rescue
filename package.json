@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "description": "Provider-normalized missed-call rescue proof harness for FlowLink Revenue AI.",
-  "type": "module",
   "scripts": {
     "start": "node server.js",
     "test": "node --test test/*.test.js",

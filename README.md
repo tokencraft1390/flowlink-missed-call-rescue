@@ -10,6 +10,20 @@ FlowLink Missed Call Rescue is a provider-normalized workflow for recovering mis
 - A controlled dry-run produces machine-readable evidence without sending an external message or spending customer funds.
 - CI runs the automated tests and uploads the dry-run evidence as a workflow artifact.
 
+## Agents for Humans / Strands integration
+
+A separate Strands Agents SDK implementation lives in [`strands-agent/`](strands-agent/). It keeps the live Node service unchanged while giving the hackathon entry a real Strands agent boundary for missed-call triage and recovery planning.
+
+Run it with Node.js 22+ and AWS/Bedrock credentials configured:
+
+```bash
+cd strands-agent
+npm install
+node agent.js missed
+```
+
+The Strands tool remains evidence-first: it may prepare a human-reviewed follow-up, but it does not claim an external send or revenue without corresponding provider/payment evidence.
+
 ## What is not yet claimed
 
 This repository does **not** by itself prove customer revenue, paid conversions, SMS delivery, production uptime, or a reference customer. Those claims require live provider and customer evidence.
@@ -44,3 +58,7 @@ Only after steps 1–6 should the project be represented as having paid commerci
 ## Architecture
 
 See [`docs/architecture.md`](docs/architecture.md).
+
+## License
+
+MIT. See [`LICENSE`](LICENSE).

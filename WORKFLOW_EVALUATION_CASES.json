@@ -1,0 +1,53 @@
+{
+  "package_id": "FL-WF-CALL-001",
+  "version": "0.1.0",
+  "prepared_at": "2026-10-01",
+  "classification": "evaluation_plan",
+  "data_class": "synthetic",
+  "execution_status": "not_run",
+  "repository": "flowlink-missed-call-rescue",
+  "source_document": "docs/architecture.md",
+  "source_blob_sha": "7af67d2c6f82d26de8194f9aba4ddcfaddb0dc91",
+  "cases": [
+    {
+      "case_id": "FL-WF-CALL-001-missed",
+      "input_description": "Valid missed-call event",
+      "expected_result": "rescue_candidate",
+      "observed_result": null,
+      "evidence_uri": null,
+      "status": "not_run"
+    },
+    {
+      "case_id": "FL-WF-CALL-001-answered",
+      "input_description": "Valid answered-call event",
+      "expected_result": "no_recovery",
+      "observed_result": null,
+      "evidence_uri": null,
+      "status": "not_run"
+    },
+    {
+      "case_id": "FL-WF-CALL-001-signature",
+      "input_description": "Invalid authentication",
+      "expected_result": "rejected",
+      "observed_result": null,
+      "evidence_uri": null,
+      "status": "not_run"
+    },
+    {
+      "case_id": "FL-WF-CALL-001-dry_run",
+      "input_description": "Recovery dry-run",
+      "expected_result": "external_send_false",
+      "observed_result": null,
+      "evidence_uri": null,
+      "status": "not_run"
+    },
+    {
+      "case_id": "FL-WF-CALL-001-credentials",
+      "input_description": "CALL-E credentials or authorized number absent",
+      "expected_result": "execution_blocked",
+      "observed_result": null,
+      "evidence_uri": null,
+      "status": "not_run"
+    }
+  ]
+}

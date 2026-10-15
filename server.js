@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const { verifySignature, mapAgentPhoneWebhook } = require('./agentphone/adapter');
 const { shouldStartRescue } = require('./provider-core/normalize-event');
+const { dispatchRescue, isDispatchConfigured } = require('./provider-core/rescue-dispatch');
 
 const PORT = Number(process.env.PORT || 10000);
 const WEBHOOK_SECRET = process.env.AGENTPHONE_WEBHOOK_SECRET || '';
@@ -45,7 +46,8 @@ const server = http.createServer(async (req, res) => {
     return sendJson(res, 200, {
       ok: true,
       service: 'flowlink-missed-call-rescue',
-      webhookConfigured: Boolean(WEBHOOK_SECRET)
+      webhookConfigured: Boolean(WEBHOOK_SECRET),
+      rescueDispatchConfigured: isDispatchConfigured()
     });
   }
 
@@ -78,6 +80,26 @@ const server = http.createServer(async (req, res) => {
       const event = mapAgentPhoneWebhook(payload);
       const rescue = shouldStartRescue(event);
 
+      let dispatch = { performed: false, reason: 'not_a_rescue_event' };
+      if (rescue) {
+        try {
+          dispatch = await dispatchRescue(event);
+        } catch (dispatchError) {
+          console.error(JSON.stringify({
+            event: 'rescue_dispatch_error',
+            callId: event.callId || null,
+            error: String(dispatchError.message || dispatchError)
+          }));
+          return sendJson(res, 502, {
+            ok: false,
+            accepted: false,
+            rescueDecision: 'START_RESCUE',
+            error: 'rescue_dispatch_failed',
+            callId: event.callId || null
+          });
+        }
+      }
+
       const evidence = {
         event: 'agentphone_webhook_received',
         receivedAt: new Date().toISOString(),
@@ -86,7 +108,9 @@ const server = http.createServer(async (req, res) => {
         normalizedType: event.type,
         disposition: event.disposition,
         rescueDecision: rescue ? 'START_RESCUE' : 'NO_ACTION',
-        externalSendPerformed: false
+        externalSendPerformed: dispatch.performed,
+        dispatchReason: dispatch.reason || null,
+        dispatchStatus: dispatch.status || null
       };
       console.log(JSON.stringify(evidence));
 
@@ -94,6 +118,8 @@ const server = http.createServer(async (req, res) => {
         ok: true,
         accepted: true,
         rescueDecision: evidence.rescueDecision,
+        externalSendPerformed: evidence.externalSendPerformed,
+        dispatchReason: evidence.dispatchReason,
         callId: event.callId || null
       });
     } catch (err) {
@@ -109,6 +135,7 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(JSON.stringify({
     event: 'service_started',
     port: PORT,
-    webhookConfigured: Boolean(WEBHOOK_SECRET)
+    webhookConfigured: Boolean(WEBHOOK_SECRET),
+    rescueDispatchConfigured: isDispatchConfigured()
   }));
 });

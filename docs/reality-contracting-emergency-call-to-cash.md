@@ -9,11 +9,11 @@ Convert missed after-hours calls into qualified, card-paid emergency jobs withou
 
 ## Flow
 
-`MISSED_CALL -> SEND_SMS_30S -> WAIT_90S -> IF_NO_REPLY SEND_SECOND_TOUCH -> CAPTURE_REPLY -> CLASSIFY_ISSUE -> CAPTURE_ZIP -> QUALIFY_SERVICE_AREA -> SEND_PAYMENT_LINK -> PAYMENT_CONFIRMED -> BOOK_SLOT -> SEND_ETA -> JOB_COMPLETE -> CHARGE/INVOICE -> SEND_RECEIPT -> MORNING_FOLLOWUP_IF_NOT_BOOKED`
+`MISSED_CALL -> SEND_SMS_30S -> WAIT_90S -> IF_NO_REPLY SEND_SECOND_TOUCH -> CAPTURE_REPLY -> CLASSIFY_ISSUE -> LIFE_SAFETY_GATE -> IF_IMMEDIATE_HAZARD STOP_BOOKING_AND_ESCALATE_TO_911_OR_UTILITY -> IF_SITE_SAFE CAPTURE_ZIP -> QUALIFY_SERVICE_AREA_AND_SCOPE -> IF_INELIGIBLE TERMINAL_DECLINE_OR_REFER -> IF_ELIGIBLE SEND_PAYMENT_LINK -> PAYMENT_CONFIRMED -> BOOK_SLOT -> SEND_ETA -> JOB_COMPLETE -> CHARGE/INVOICE -> SEND_RECEIPT -> MORNING_FOLLOWUP_ONLY_IF_ELIGIBLE_UNRESOLVED_AND_NOT_BOOKED`
 
 ## First response, T+30 seconds
 
-> Reality Contracting Emergency Service — got your missed call. I’m on a job in the Elmira area. Are you dealing with 1) lockout, 2) active water leak, 3) electrical/no-heat issue, or 4) another urgent repair? Reply with the number and property ZIP. — Zachary
+> Reality Contracting Emergency Service — we received your missed call. Are you dealing with 1) lockout, 2) active water leak, 3) electrical/no-heat issue, or 4) another urgent repair? Reply with the number and property ZIP and we’ll confirm availability.
 
 ## Second touch, T+2 minutes if no reply
 
@@ -25,9 +25,10 @@ Convert missed after-hours calls into qualified, card-paid emergency jobs withou
 
 Qualification gates:
 
-- Immediate safety or property-damage risk: continue emergency flow.
+- Immediate threat to life, fire, gas odor, arcing/live electrical hazard, carbon-monoxide concern, flooding near energized equipment, or another unsafe condition: stop contractor booking. Instruct the caller to get to safety and contact 911 and/or the appropriate utility/emergency service first. Resume contractor dispatch only after the immediate hazard is controlled and the site is safe to enter.
+- Urgent property-damage risk without an immediate life-safety hazard: continue emergency contractor flow.
 - Can reasonably wait until standard hours: offer next available standard slot.
-- Outside service capability or licensing scope: decline or refer.
+- Outside service capability, licensing scope, or service area: decline or refer and preserve that terminal status.
 
 ## Booking close
 
@@ -46,6 +47,8 @@ Before dispatch:
 - Property address confirmed.
 - Occupancy confirmed.
 - Emergency type confirmed.
+- Life-safety gate cleared and site safe to enter.
+- Service area and scope eligibility confirmed.
 - Card payment or dispatch authorization confirmed.
 - Actual ETA window sent.
 
@@ -66,11 +69,11 @@ Do not promise a universal 45- or 90-minute ETA. Quote the actual available wind
 
 ## Morning recovery loop
 
-At 7:00 AM, follow up every after-hours lead that did not book:
+At 7:00 AM, follow up only eligible, unresolved after-hours leads that did not book. Do not reopen leads marked declined, referred, outside service area, outside capability/licensing scope, unsafe-site hold, or otherwise terminal.
 
 > Morning, this is Reality Contracting following up on your emergency call from last night. Did you get the issue handled? If not, I have service availability today and can invoice by card for the property.
 
-Track outcome as: booked / solved elsewhere / no response / not qualified / follow-up date.
+Track outcome as: booked / solved elsewhere / no response / not qualified / referred / unsafe-site hold / follow-up date.
 
 ## Lead record
 
@@ -83,6 +86,8 @@ Persist at minimum:
 - Property manager/company when applicable
 - Issue type
 - Occupied yes/no
+- Life-safety gate status
+- Service-area/scope eligibility
 - Lead status
 - Dispatch fee quoted
 - Payment status
